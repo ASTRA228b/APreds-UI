@@ -10,8 +10,6 @@ public class Main : MonoBehaviour
 {
     private GameObject? LT;
     private GameObject? RT;
-    private Transform? LeftController;
-    private Transform? RightController;
     private float PredSrength = 0f;
     private bool IsPredOn = true;
     private bool lastPredState = false;
@@ -125,14 +123,20 @@ public class Main : MonoBehaviour
     {
         if (!IsPredOn) return;
         if (LT == null || RT == null) return;
-        LeftController = GTPlayer.Instance.LeftHand.controllerTransform;
-        RightController = GTPlayer.Instance.RightHand.controllerTransform;
-        LT.transform.position = LeftController.position;
-        RT.transform.position = RightController.position;
+
+        var head = GorillaTagger.Instance.headCollider.transform;
+
+        Transform lController = GTPlayer.Instance.LeftHand.controllerTransform;
+        Transform rController = GTPlayer.Instance.RightHand.controllerTransform;
+
+        LT.transform.position = head.position - GorillaTagger.Instance.leftHandTransform.position;
+        RT.transform.position = head.position - GorillaTagger.Instance.rightHandTransform.position;
+
         Vector3 leftVel = LT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
         Vector3 rightVel = RT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
-        LeftController.position -= leftVel * PredSrength;
-        RightController.position -= rightVel * PredSrength;
+
+        lController.position -= leftVel * PredSrength;
+        rController.position -= rightVel * PredSrength;
     }
     // Style Logic
     private void INIT()
