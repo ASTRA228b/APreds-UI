@@ -3,14 +3,13 @@ using GorillaLocomotion.Climbing;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
 namespace APreds.Core;
 
 public class Main : MonoBehaviour
 {
     private GameObject? LT;
     private GameObject? RT;
-    private float PredSrength = 0f;
+    private float PredSrength = 0.05f; 
     private bool IsPredOn = true;
     private bool lastPredState = false;
     private bool IsOpen = false;
@@ -33,13 +32,15 @@ public class Main : MonoBehaviour
 
     private void Update()
     {
-        // Preds Stuff
+   
+        if (GTPlayer.Instance != null && IsPredOn && (LT == null || RT == null))
+            EnablePreds();
+
         Detect();
-        // enable Gui Stuff
+
+       
         if (Keyboard.current.uKey.wasPressedThisFrame)
-        {
             IsOpen = !IsOpen;
-        }
     }
 
     private void UIM(int id)
@@ -60,36 +61,34 @@ public class Main : MonoBehaviour
         GUILayout.Space(5f);
         GUILayout.Label("Set Preds Strength");
         PredSrength = GUILayout.HorizontalSlider(PredSrength, 0.001f, 0.2f, SStyle, STStyle);
-        GUILayout.Label($"Srength set to {PredSrength:F3}");
+        GUILayout.Label($"Strength set to {PredSrength:F3}");
         GUILayout.Space(5f);
         GUILayout.Label("Presets:");
         if (GUILayout.Button("Max", BStyle))
-        {
             PredSrength = 0.2f;
-        }
         if (GUILayout.Button("Random Setting", BStyle))
-        {
-            float RandomSetting = UnityEngine.Random.Range(0.001f, 0.2f);
-            PredSrength = RandomSetting;
-        }
+            PredSrength = UnityEngine.Random.Range(0.001f, 0.2f);
         if (GUILayout.Button("Reset", BStyle))
-        {
             PredSrength = 0.001f;
-        }
-        
     }
 
-    // Stuff to run in update/Preds Logic
     private void EnablePreds()
     {
         if (LT != null || RT != null) return;
 
-        LT = new GameObject("LeftTracker");
-        RT = new GameObject("RightTracker");
-
+        LT = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        LT.GetComponent<BoxCollider>().Obliterate();
+        LT.GetComponent<Rigidbody>().Obliterate();
+        LT.GetComponent<Renderer>().enabled = false;
         LT.AddComponent<GorillaVelocityTracker>();
+
+        RT = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        RT.GetComponent<BoxCollider>().Obliterate();
+        RT.GetComponent<Rigidbody>().Obliterate();
+        RT.GetComponent<Renderer>().enabled = false;
         RT.AddComponent<GorillaVelocityTracker>();
     }
+
     private void DisablePreds()
     {
         if (LT != null)
@@ -104,33 +103,46 @@ public class Main : MonoBehaviour
             RT = null;
         }
     }
+
     private void Detect()
     {
+        if (GTPlayer.Instance == null
+            || GTPlayer.Instance.LeftHand.controllerTransform == null
+            || GTPlayer.Instance.RightHand.controllerTransform == null)
+            return;
+
+ 
         if (IsPredOn != lastPredState)
         {
-            if (IsPredOn)
-                EnablePreds();
-            else
-                DisablePreds();
-
+            if (IsPredOn) EnablePreds();
+            else DisablePreds();
             lastPredState = IsPredOn;
         }
 
-        if (IsPredOn)
+
+        if (IsPredOn && LT != null && RT != null)
             MakePreds();
     }
+
     private void MakePreds()
     {
-        if (!IsPredOn) return;
-        if (LT == null || RT == null) return;
+        if (!IsPredOn || LT == null || RT == null || GTPlayer.Instance == null)
+            return;
 
-        var head = GorillaTagger.Instance.headCollider.transform;
+        var head = GorillaTagger.Instance?.headCollider?.transform;
+        if (head == null)
+            return;
 
-        Transform lController = GTPlayer.Instance.LeftHand.controllerTransform;
-        Transform rController = GTPlayer.Instance.RightHand.controllerTransform;
+        Transform? lController = GTPlayer.Instance.LeftHand.controllerTransform;
+        Transform? rController = GTPlayer.Instance.RightHand.controllerTransform;
+        Transform? leftHandTransform = GorillaTagger.Instance?.leftHandTransform;
+        Transform? rightHandTransform = GorillaTagger.Instance?.rightHandTransform;
 
-        LT.transform.position = head.position - GorillaTagger.Instance.leftHandTransform.position;
-        RT.transform.position = head.position - GorillaTagger.Instance.rightHandTransform.position;
+        if (lController == null || rController == null || leftHandTransform == null || rightHandTransform == null)
+            return;
+
+        LT.transform.position = head.position - leftHandTransform.position;
+        RT.transform.position = head.position - rightHandTransform.position;
 
         Vector3 leftVel = LT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
         Vector3 rightVel = RT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
@@ -138,13 +150,15 @@ public class Main : MonoBehaviour
         lController.position -= leftVel * PredSrength;
         rController.position -= rightVel * PredSrength;
     }
-    // Style Logic
+
+    
     private void INIT()
     {
         WTex = MakeTexture(1, 1, WColor);
         BBackground = MakeTexture(1, 1, BColor);
         STex = MakeTexture(1, 1, SColor);
         SThumbTex = MakeTexture(1, 1, STColor);
+
         WStyle = new GUIStyle(GUI.skin.window);
         WStyle.normal.background = WTex;
         WStyle.hover.background = WTex;
@@ -155,6 +169,7 @@ public class Main : MonoBehaviour
         WStyle.onFocused.background = WTex;
         WStyle.normal.textColor = Color.white;
         WStyle.fontStyle = FontStyle.Normal;
+
         BStyle = new GUIStyle(GUI.skin.button);
         BStyle.normal.background = BBackground;
         BStyle.active.background = BBackground;
@@ -172,6 +187,7 @@ public class Main : MonoBehaviour
         BStyle.onHover.textColor = Color.blue;
         BStyle.onActive.textColor = Color.blue;
         BStyle.onFocused.textColor = Color.blue;
+
         SStyle = new GUIStyle(GUI.skin.horizontalSlider);
         STStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
         SStyle.normal.background = STex;
@@ -189,5 +205,4 @@ public class Main : MonoBehaviour
         value.Apply();
         return value;
     }
-
 }
