@@ -1,2 +1,5 @@
-a project the was a waste of time you can use the stuff in this but it no work
-based of hamburbur and the destroying bs im so done
+## Apreds UI (Astras Preds UI)
+
+is horrid and does not work or wont work for me
+yes i did use some code from hamburbur you shoud get the menu
+U to open this use it/test it if you want to
