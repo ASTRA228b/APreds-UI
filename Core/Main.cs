@@ -13,7 +13,7 @@ public class Main : MonoBehaviour
     private Transform? LeftController;
     private Transform? RightController;
     private float PredSrength = 0f;
-    private bool IsPredOn = false;
+    private bool IsPredOn = true;
     private bool lastPredState = false;
     private bool IsOpen = false;
     private Texture2D? WTex, BBackground, STex, SThumbTex;
@@ -78,34 +78,48 @@ public class Main : MonoBehaviour
         {
             PredSrength = 0.001f;
         }
+        
     }
 
     // Stuff to run in update/Preds Logic
     private void EnablePreds()
     {
+        if (LT != null || RT != null) return;
+
         LT = new GameObject("LeftTracker");
-        RT = new GameObject("RoghtTracker");
+        RT = new GameObject("RightTracker");
+
         LT.AddComponent<GorillaVelocityTracker>();
         RT.AddComponent<GorillaVelocityTracker>();
     }
     private void DisablePreds()
     {
-        if (LT != null) Destroy(LT);
-        if (RT != null) Destroy(RT);
+        if (LT != null)
+        {
+            Destroy(LT);
+            LT = null;
+        }
+
+        if (RT != null)
+        {
+            Destroy(RT);
+            RT = null;
+        }
     }
     private void Detect()
     {
-        if (IsPredOn && !lastPredState)
+        if (IsPredOn != lastPredState)
         {
-            EnablePreds();
-        }
-        else if (!IsPredOn && lastPredState)
-        {
-            DisablePreds();
+            if (IsPredOn)
+                EnablePreds();
+            else
+                DisablePreds();
+
+            lastPredState = IsPredOn;
         }
 
-        lastPredState = IsPredOn;
-        MakePreds();
+        if (IsPredOn)
+            MakePreds();
     }
     private void MakePreds()
     {
