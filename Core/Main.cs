@@ -9,7 +9,7 @@ public class Main : MonoBehaviour
 {
     private GameObject? LT;
     private GameObject? RT;
-    private float PredSrength = 0.05f; 
+    private float PredSrength = 0f; 
     private bool IsPredOn = true;
     private bool lastPredState = false;
     private bool IsOpen = false;
@@ -32,13 +32,7 @@ public class Main : MonoBehaviour
 
     private void Update()
     {
-   
-        if (GTPlayer.Instance != null && IsPredOn && (LT == null || RT == null))
-            EnablePreds();
-
         Detect();
-
-       
         if (Keyboard.current.uKey.wasPressedThisFrame)
             IsOpen = !IsOpen;
     }
@@ -74,8 +68,6 @@ public class Main : MonoBehaviour
 
     private void EnablePreds()
     {
-        if (LT != null || RT != null) return;
-
         LT = GameObject.CreatePrimitive(PrimitiveType.Cube);
         LT.GetComponent<BoxCollider>().Obliterate();
         LT.GetComponent<Rigidbody>().Obliterate();
@@ -94,13 +86,11 @@ public class Main : MonoBehaviour
         if (LT != null)
         {
             Destroy(LT);
-            LT = null;
         }
 
         if (RT != null)
         {
             Destroy(RT);
-            RT = null;
         }
     }
 
@@ -120,13 +110,13 @@ public class Main : MonoBehaviour
         }
 
 
-        if (IsPredOn && LT != null && RT != null)
+        if (IsPredOn)
             MakePreds();
     }
 
     private void MakePreds()
     {
-        if (!IsPredOn || LT == null || RT == null || GTPlayer.Instance == null)
+        if (!IsPredOn || LT == null || RT == null)
             return;
 
         var head = GorillaTagger.Instance?.headCollider?.transform;
