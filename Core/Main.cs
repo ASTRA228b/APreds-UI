@@ -32,7 +32,17 @@ public class Main : MonoBehaviour
 
     private void Update()
     {
-        Detect();
+        if (IsPredOn != lastPredState)
+        {
+            if (IsPredOn) EnablePreds();
+            else DisablePreds();
+
+            lastPredState = IsPredOn;
+        }
+
+        if (IsPredOn)
+            MakePreds();
+
         if (Keyboard.current.uKey.wasPressedThisFrame)
             IsOpen = !IsOpen;
     }
@@ -68,6 +78,9 @@ public class Main : MonoBehaviour
 
     private void EnablePreds()
     {
+        if (LT != null || RT != null)
+            return;
+
         LT = GameObject.CreatePrimitive(PrimitiveType.Cube);
         LT.GetComponent<BoxCollider>().Obliterate();
         LT.GetComponent<Rigidbody>().Obliterate();
@@ -86,62 +99,48 @@ public class Main : MonoBehaviour
         if (LT != null)
         {
             Destroy(LT);
+            LT = null;
         }
 
         if (RT != null)
         {
             Destroy(RT);
+            RT = null;
         }
     }
 
-    private void Detect()
-    {
-        if (GTPlayer.Instance == null
-            || GTPlayer.Instance.LeftHand.controllerTransform == null
-            || GTPlayer.Instance.RightHand.controllerTransform == null)
-            return;
-
- 
-        if (IsPredOn != lastPredState)
-        {
-            if (IsPredOn) EnablePreds();
-            else DisablePreds();
-            lastPredState = IsPredOn;
-        }
-
-
-        if (IsPredOn)
-            MakePreds();
-    }
 
     private void MakePreds()
     {
-        if (!IsPredOn || LT == null || RT == null)
+        if (LT == null || RT == null)
             return;
 
-        var head = GorillaTagger.Instance?.headCollider?.transform;
-        if (head == null)
+        if (GTPlayer.Instance == null || GorillaTagger.Instance == null)
             return;
 
-        Transform? lController = GTPlayer.Instance.LeftHand.controllerTransform;
-        Transform? rController = GTPlayer.Instance.RightHand.controllerTransform;
-        Transform? leftHandTransform = GorillaTagger.Instance?.leftHandTransform;
-        Transform? rightHandTransform = GorillaTagger.Instance?.rightHandTransform;
-
-        if (lController == null || rController == null || leftHandTransform == null || rightHandTransform == null)
+        if (GTPlayer.Instance.LeftHand.controllerTransform == null ||
+            GTPlayer.Instance.RightHand.controllerTransform == null ||
+            GorillaTagger.Instance.leftHandTransform == null ||
+            GorillaTagger.Instance.rightHandTransform == null ||
+            GorillaTagger.Instance.headCollider == null)
             return;
 
-        LT.transform.position = head.position - leftHandTransform.position;
-        RT.transform.position = head.position - rightHandTransform.position;
+        Transform head = GorillaTagger.Instance.headCollider.transform;
+
+        LT.transform.position = head.position - GorillaTagger.Instance.leftHandTransform.position;
+        RT.transform.position = head.position - GorillaTagger.Instance.rightHandTransform.position;
 
         Vector3 leftVel = LT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
         Vector3 rightVel = RT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
+
+        Transform lController = GTPlayer.Instance.LeftHand.controllerTransform;
+        Transform rController = GTPlayer.Instance.RightHand.controllerTransform;
 
         lController.position -= leftVel * PredSrength;
         rController.position -= rightVel * PredSrength;
     }
 
-    
+
     private void INIT()
     {
         WTex = MakeTexture(1, 1, WColor);
