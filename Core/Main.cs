@@ -130,8 +130,8 @@ public class Main : MonoBehaviour
         LT.transform.position = head.position - GorillaTagger.Instance.leftHandTransform.position;
         RT.transform.position = head.position - GorillaTagger.Instance.rightHandTransform.position;
 
-        Vector3 leftVel = LT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
-        Vector3 rightVel = RT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 0f);
+        Vector3 leftVel = LT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 1f);
+        Vector3 rightVel = RT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 1f);
 
         Transform lController = GTPlayer.Instance.LeftHand.controllerTransform;
         Transform rController = GTPlayer.Instance.RightHand.controllerTransform;
