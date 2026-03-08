@@ -10,7 +10,7 @@ public class Main : MonoBehaviour
     private GameObject? LT;
     private GameObject? RT;
     private float PredSrength = 0f; 
-    private bool IsPredOn = true;
+    private bool IsPredOn = false;
     private bool lastPredState = false;
     private bool IsOpen = false;
     private Texture2D? WTex, BBackground, STex, SThumbTex;
@@ -19,11 +19,16 @@ public class Main : MonoBehaviour
     private Color BColor = new Color(0.2f, 0.2f, 0.2f, 1f);
     private Color SColor = new Color(0.15f, 0.15f, 0.15f, 1f);
     private Color STColor = new Color(0.0f, 0.6f, 1f, 1f);
+    private bool StylesLoaded = false;
     private Rect Window = new Rect(155, 155, 360, 460);
 
     private void OnGUI()
     {
-        INIT();
+        if (!StylesLoaded)
+        {
+            INIT();
+            StylesLoaded = true;
+        }
         if (IsOpen)
         {
             Window = GUILayout.Window(676998, Window, UIM, "APreds UI", WStyle);
@@ -114,30 +119,26 @@ public class Main : MonoBehaviour
     {
         if (LT == null || RT == null)
             return;
-
         if (GTPlayer.Instance == null || GorillaTagger.Instance == null)
             return;
-
-        if (GTPlayer.Instance.LeftHand.controllerTransform == null ||
-            GTPlayer.Instance.RightHand.controllerTransform == null ||
-            GorillaTagger.Instance.leftHandTransform == null ||
-            GorillaTagger.Instance.rightHandTransform == null ||
-            GorillaTagger.Instance.headCollider == null)
+        if (GorillaTagger.Instance.leftHandTransform == null ||
+            GorillaTagger.Instance.rightHandTransform == null)
             return;
+        Transform leftHand = GorillaTagger.Instance.leftHandTransform;
+        Transform rightHand = GorillaTagger.Instance.rightHandTransform;
+        LT.transform.position = leftHand.position;
+        RT.transform.position = rightHand.position;
+        GorillaVelocityTracker leftTracker = LT.GetComponent<GorillaVelocityTracker>();
+        GorillaVelocityTracker rightTracker = RT.GetComponent<GorillaVelocityTracker>();
 
-        Transform head = GorillaTagger.Instance.headCollider.transform;
-
-        LT.transform.position = head.position - GorillaTagger.Instance.leftHandTransform.position;
-        RT.transform.position = head.position - GorillaTagger.Instance.rightHandTransform.position;
-
-        Vector3 leftVel = LT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 1f);
-        Vector3 rightVel = RT.GetComponent<GorillaVelocityTracker>().GetAverageVelocity(true, 1f);
-
-        Transform lController = GTPlayer.Instance.LeftHand.controllerTransform;
-        Transform rController = GTPlayer.Instance.RightHand.controllerTransform;
-
-        lController.position -= leftVel * PredSrength;
-        rController.position -= rightVel * PredSrength;
+        if (leftTracker == null || rightTracker == null)
+            return;
+        Vector3 leftVel = leftTracker.GetAverageVelocity(true, 1f);
+        Vector3 rightVel = rightTracker.GetAverageVelocity(true, 1f);
+        leftVel = Vector3.ClampMagnitude(leftVel, 5f);
+        rightVel = Vector3.ClampMagnitude(rightVel, 5f);
+        leftHand.position += leftVel * PredSrength;
+        rightHand.position += rightVel * PredSrength;
     }
 
 

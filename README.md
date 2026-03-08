@@ -1,5 +1,13 @@
 ## Apreds UI (Astras Preds UI)
 
-is horrid and does not work or wont work for me
-yes i did use some code from hamburbur you shoud get the menu
-U to open this use it/test it if you want to
+Is a Skib mod made a little bit of code from hamburbur but changed alot
+
+# How to use 
+
+When you have the dll in ganm press U and figure it out from there 
+its obv what todo
+(open the game first obv)
+
+# how to downlaod
+
+this should be common knowledge if you are using any of my mods :skull: 
