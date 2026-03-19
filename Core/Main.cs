@@ -122,23 +122,39 @@ public class Main : MonoBehaviour
         if (GTPlayer.Instance == null || GorillaTagger.Instance == null)
             return;
         if (GorillaTagger.Instance.leftHandTransform == null ||
-            GorillaTagger.Instance.rightHandTransform == null)
+            GorillaTagger.Instance.rightHandTransform == null ||
+            GorillaTagger.Instance.headCollider == null)
             return;
         Transform leftHand = GorillaTagger.Instance.leftHandTransform;
         Transform rightHand = GorillaTagger.Instance.rightHandTransform;
+        Transform head = GorillaTagger.Instance.headCollider.transform;
         LT.transform.position = leftHand.position;
         RT.transform.position = rightHand.position;
         GorillaVelocityTracker leftTracker = LT.GetComponent<GorillaVelocityTracker>();
         GorillaVelocityTracker rightTracker = RT.GetComponent<GorillaVelocityTracker>();
-
         if (leftTracker == null || rightTracker == null)
             return;
         Vector3 leftVel = leftTracker.GetAverageVelocity(true, 1f);
         Vector3 rightVel = rightTracker.GetAverageVelocity(true, 1f);
         leftVel = Vector3.ClampMagnitude(leftVel, 5f);
         rightVel = Vector3.ClampMagnitude(rightVel, 5f);
-        leftHand.position += leftVel * PredSrength;
-        rightHand.position += rightVel * PredSrength;
+        float movementThreshold = 0.1f;
+        bool leftMoving = leftVel.magnitude > movementThreshold;
+        bool rightMoving = rightVel.magnitude > movementThreshold;
+        float smoothness = 0.2f;
+        float maxArmLength = 1.5f;
+        if (leftMoving)
+        {
+            Vector3 target = leftHand.position + leftVel * PredSrength;
+            leftHand.position = Vector3.Lerp(leftHand.position, target, smoothness);
+        }
+        if (rightMoving)
+        {
+            Vector3 target = rightHand.position + rightVel * PredSrength;
+            rightHand.position = Vector3.Lerp(rightHand.position, target, smoothness);
+        }
+        leftHand.position = Vector3.ClampMagnitude(leftHand.position - head.position, maxArmLength) + head.position;
+        rightHand.position = Vector3.ClampMagnitude(rightHand.position - head.position, maxArmLength) + head.position;
     }
 
 
