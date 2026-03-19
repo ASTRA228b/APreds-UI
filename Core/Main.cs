@@ -9,7 +9,10 @@ public class Main : MonoBehaviour
 {
     private GameObject? LT;
     private GameObject? RT;
-    private float PredSrength = 0f; 
+    private float PredSrength = 0f;
+    private float movementThreshold = 0.01f;
+    private float smoothness = 0.05f;
+    private float maxArmLength = 1.0f;
     private bool IsPredOn = false;
     private bool lastPredState = false;
     private bool IsOpen = false;
@@ -68,9 +71,18 @@ public class Main : MonoBehaviour
         GUILayout.Label("Enable Preds:");
         IsPredOn = GUILayout.Toggle(IsPredOn, "Enable Predictions");
         GUILayout.Space(5f);
-        GUILayout.Label("Set Preds Strength");
+        GUILayout.Label("Preds Strength");
         PredSrength = GUILayout.HorizontalSlider(PredSrength, 0.001f, 0.2f, SStyle, STStyle);
         GUILayout.Label($"Strength set to {PredSrength:F3}");
+        GUILayout.Label("Movement Threshold");
+        movementThreshold = GUILayout.HorizontalSlider(movementThreshold, 0.01f, 0.3f, SStyle, STStyle);
+        GUILayout.Label($"Threshold set to {movementThreshold:F3}");
+        GUILayout.Label("Smoothness");
+        smoothness = GUILayout.HorizontalSlider(smoothness, 0.5f, 0.4f, SStyle, STStyle);
+        GUILayout.Label($"Smoothness set to {movementThreshold:F3}");
+        GUILayout.Label("Max Arm Length");
+        maxArmLength = GUILayout.HorizontalSlider(maxArmLength, 1.0f, 2.5f, SStyle, STStyle);
+        GUILayout.Label($"MAL set to {movementThreshold:F3}");
         GUILayout.Space(5f);
         GUILayout.Label("Presets:");
         if (GUILayout.Button("Max", BStyle))
@@ -138,11 +150,8 @@ public class Main : MonoBehaviour
         Vector3 rightVel = rightTracker.GetAverageVelocity(true, 1f);
         leftVel = Vector3.ClampMagnitude(leftVel, 5f);
         rightVel = Vector3.ClampMagnitude(rightVel, 5f);
-        float movementThreshold = 0.1f;
         bool leftMoving = leftVel.magnitude > movementThreshold;
         bool rightMoving = rightVel.magnitude > movementThreshold;
-        float smoothness = 0.2f;
-        float maxArmLength = 1.5f;
         if (leftMoving)
         {
             Vector3 target = leftHand.position + leftVel * PredSrength;
