@@ -78,7 +78,7 @@ public class Main : MonoBehaviour
         movementThreshold = GUILayout.HorizontalSlider(movementThreshold, 0.01f, 0.3f, SStyle, STStyle);
         GUILayout.Label($"Threshold set to {movementThreshold:F3}");
         GUILayout.Label("Smoothness");
-        smoothness = GUILayout.HorizontalSlider(smoothness, 0.5f, 0.4f, SStyle, STStyle);
+        smoothness = GUILayout.HorizontalSlider(smoothness, 0.01f, 0.5f, SStyle, STStyle);
         GUILayout.Label($"Smoothness set to {smoothness:F3}");
         GUILayout.Label("Max Arm Length");
         maxArmLength = GUILayout.HorizontalSlider(maxArmLength, 1.0f, 2.5f, SStyle, STStyle);
